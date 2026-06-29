@@ -145,6 +145,27 @@
       abstract: metaAll(doc, "citation_abstract")[0] || null,
     });
   }
+  function parseDublinCoreArticle(html, source, opts) {
+    opts = opts || {};
+    const doc = parseDocHtml(html);
+    // Only accept the DOI-schemed identifier; never fall back to publisher-id/submission-id.
+    const doiEl = doc.querySelector('meta[name="dc.Identifier"][scheme="doi"]');
+    const doi = doiEl ? (doiEl.getAttribute("content") || "").trim() || null : null;
+    const dt = metaAll(doc, "dc.Date")[0] || "";
+    const ym = /(\d{4})/.exec(dt) || /(20\d{2}|19\d{2})/.exec(doi || "");
+    function fill(t) { return t && doi ? t.replace("{doi}", doi) : null; }
+    return normalizeArticle({
+      source: source,
+      title: metaAll(doc, "dc.Title")[0] || null,
+      authors: metaAll(doc, "dc.Creator").map((s) => s.replace(/\s+/g, " ").trim()),
+      year: ym ? ym[1] : null,
+      venue: metaAll(doc, "citation_journal_title")[0] || metaAll(doc, "dc.Source")[0] || null,
+      doi: doi,
+      url: fill(opts.urlTemplate),
+      pdfUrl: fill(opts.pdfTemplate),
+      abstract: metaAll(doc, "dc.Description")[0] || null,
+    });
+  }
   function harvestHrefs(html, origin, matchRe) {
     const doc = parseDocHtml(html);
     const seen = []; const out = [];
@@ -198,7 +219,12 @@
       if (opts && opts.page && Number(opts.page) > 1 && cfg.pageParam) parts.push(cfg.pageParam + "=" + encodeURIComponent(opts.page));
       return origin + cfg.searchPath + "?" + parts.join("&");
     }
-    function parseArticleMeta(html) { return parseHighwireArticle(html, source); }
+    function parseArticleMeta(html) {
+      if (cfg.metaProfile === "dublincore") {
+        return parseDublinCoreArticle(html, source, { pdfTemplate: cfg.pdfTemplate, urlTemplate: cfg.articleUrlTemplate });
+      }
+      return parseHighwireArticle(html, source);
+    }
     function harvestResultUrls(html) { return harvestHrefs(html, origin, cfg.linkMatch); }
     function parseReferences(html) { return parseHighwireReferences(html, cfg.refSelectors); }
     async function searchFromUrl(listUrl, query, page, ctx) {
@@ -230,5 +256,5 @@
     };
   }
 
-  return { _adapters, register, get, normalizeArticle, makeSearchResult, canonicalDoi, normalizeTitle, dedupeArticles, makeBrowserCtx, pipelines, run, mapPool, parseHighwireArticle, harvestHrefs, parseHighwireReferences, makePublisherAdapter };
+  return { _adapters, register, get, normalizeArticle, makeSearchResult, canonicalDoi, normalizeTitle, dedupeArticles, makeBrowserCtx, pipelines, run, mapPool, parseHighwireArticle, parseDublinCoreArticle, harvestHrefs, parseHighwireReferences, makePublisherAdapter };
 });
