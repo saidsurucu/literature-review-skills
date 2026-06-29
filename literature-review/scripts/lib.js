@@ -106,5 +106,16 @@
     return { error: "unsupported", source, op };
   }
 
-  return { _adapters, register, get, normalizeArticle, makeSearchResult, canonicalDoi, normalizeTitle, dedupeArticles, makeBrowserCtx, pipelines, run };
+  async function mapPool(items, limit, fn) {
+    const results = new Array(items.length);
+    let next = 0;
+    async function worker() {
+      while (next < items.length) { const i = next++; try { results[i] = await fn(items[i], i); } catch (e) { results[i] = null; } }
+    }
+    const n = Math.max(1, Math.min(limit, items.length || 1));
+    await Promise.all(Array.from({ length: n }, worker));
+    return results;
+  }
+
+  return { _adapters, register, get, normalizeArticle, makeSearchResult, canonicalDoi, normalizeTitle, dedupeArticles, makeBrowserCtx, pipelines, run, mapPool };
 });
