@@ -1,0 +1,32 @@
+{
+  "_provenance": "ebi.ac.uk/europepmc .../search?query=knowledge management&resultType=core — captured 2026-06-29 (trimmed)",
+  "hitCount": 1541578,
+  "resultList": {
+    "result": [
+      {
+        "source": "MED",
+        "id": "40000001",
+        "doi": "10.1186/s12911-026-03559-1",
+        "title": "Knowledge management strategies and modern decision support.",
+        "authorString": "Smith J, Jones K.",
+        "pubYear": "2026",
+        "journalInfo": { "journal": { "title": "BMC medical informatics and decision making" } },
+        "abstractText": "<p>We review knowledge management strategies.</p>",
+        "pubType": "research-article",
+        "citedByCount": 12,
+        "isOpenAccess": "N"
+      },
+      {
+        "source": "PPR",
+        "id": "PPR700000",
+        "doi": "10.1101/2026.01.01.000001",
+        "title": "A preprint on organizational knowledge",
+        "authorString": "Doe A.",
+        "pubYear": "2026",
+        "journalInfo": {},
+        "citedByCount": 0,
+        "isOpenAccess": "Y"
+      }
+    ]
+  }
+}
