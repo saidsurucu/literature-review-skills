@@ -1,0 +1,19 @@
+{
+  "_provenance": "api.semanticscholar.org/graph/v1/paper/search?query=knowledge management — shape captured 2026-06-29 (keyless pool is 429-throttled; this is a representative 200 body)",
+  "total": 248311,
+  "offset": 0,
+  "data": [
+    {
+      "paperId": "abc123",
+      "title": "Knowledge Management and Knowledge Management Systems",
+      "year": 2001,
+      "venue": "MIS Quarterly",
+      "externalIds": { "DOI": "10.2307/3250961" },
+      "authors": [{ "name": "Maryam Alavi" }, { "name": "Dorothy E. Leidner" }],
+      "abstract": "A long abstract about knowledge management systems.",
+      "tldr": { "text": "KM systems support knowledge processes in organizations." },
+      "citationCount": 9001,
+      "openAccessPdf": { "url": "https://example.org/oa/3250961.pdf" }
+    }
+  ]
+}
