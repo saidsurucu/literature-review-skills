@@ -6,9 +6,10 @@ const root = path.join(__dirname, "..");
 const LR = require("../scripts/lib.js");
 require("../scripts/adapters/pubmed.js");
 require("../scripts/adapters/emerald.js");
+require("../scripts/adapters/brill.js");
 
 const OPS = ["search", "advancedSearch", "readFulltext", "extractReferences"];
-const SOURCES = ["pubmed", "emerald"];
+const SOURCES = ["pubmed", "emerald", "brill"];
 
 test("every adapter registers, declares capabilities, and has op methods or pipelines", () => {
   SOURCES.forEach((s) => {
@@ -37,8 +38,10 @@ test("SKILL.md description names every v1 source and lists the capability matrix
 test("each adapter reference doc exists and records the home origin", () => {
   const pm = fs.readFileSync(path.join(root, "reference", "pubmed.md"), "utf8");
   const em = fs.readFileSync(path.join(root, "reference", "emerald.md"), "utf8");
+  const br = fs.readFileSync(path.join(root, "reference", "brill.md"), "utf8");
   assert.ok(pm.includes("https://eutils.ncbi.nlm.nih.gov"));
   assert.ok(em.includes("https://www.emerald.com"));
+  assert.ok(br.includes("https://brill.com"));
 });
 
 test("committed HTML/JSON fixtures carry provenance", () => {
