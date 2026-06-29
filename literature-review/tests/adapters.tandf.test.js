@@ -26,6 +26,20 @@ test("parseArticleMeta reads Dublin Core (dc.*) into an Article", () => {
   assert.ok(a.abstract && a.abstract.length > 0);
 });
 
+test("parseArticleMeta is case-insensitive for Dublin Core meta (DC.Title / dc.identifier)", () => {
+  const html = '<html><head>' +
+    '<meta name="DC.Title" content="Lowercased Tenant Article">' +
+    '<meta name="DC.Creator" content="Jane Roe">' +
+    '<meta name="DC.Date" content="2021-05-02">' +
+    '<meta name="dc.identifier" scheme="DOI" content="10.1080/xx.yy.2021.123">' +
+    '<meta name="citation_journal_title" content="Some Journal"></head><body></body></html>';
+  const a = TANDF.parseArticleMeta(html);
+  assert.equal(a.title, "Lowercased Tenant Article");
+  assert.equal(a.doi, "10.1080/xx.yy.2021.123");
+  assert.equal(a.year, "2021");
+  assert.ok(a.authors.length >= 1);
+});
+
 test("harvestResultUrls keeps only /doi/full/ links (abs filtered out, no dupes)", () => {
   const urls = TANDF.harvestResultUrls(fx("tandf-search.html"));
   assert.equal(urls.length, 3);

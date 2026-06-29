@@ -55,8 +55,12 @@
   function dedupeArticles(articles) {
     const byKey = new Map();
     const order = [];
+    let anon = 0;
     (articles || []).forEach((art) => {
-      const key = canonicalDoi(art.doi) || "t:" + normalizeTitle(art.title);
+      const nt = normalizeTitle(art.title);
+      // Records with neither a DOI nor a usable title must NOT collapse together —
+      // give each its own key instead of merging all untitled records into one.
+      const key = canonicalDoi(art.doi) || (nt ? "t:" + nt : "anon:" + (anon++));
       if (!byKey.has(key)) {
         const copy = Object.assign({}, art, { sources: [art.source].filter(Boolean) });
         byKey.set(key, copy); order.push(key);
@@ -69,12 +73,31 @@
     return order.map((k) => byKey.get(k));
   }
 
+  function httpCheck(r, url) {
+    if (r.ok) return r;
+    const e = new Error("HTTP " + r.status + " for " + url);
+    e.status = r.status;
+    throw e; // 429/403/5xx/login walls surface as a structured error (see run())
+  }
   function makeBrowserCtx() {
     return {
-      async fetchText(url, opts) { const r = await fetch(url, opts); return r.text(); },
-      async fetchJson(url, opts) { const r = await fetch(url, opts); return r.json(); },
-      // For client-rendered search pages: the live DOM after navigation+render.
-      async pageHtml() { return typeof document !== "undefined" ? document.documentElement.outerHTML : ""; },
+      async fetchText(url, opts) { return httpCheck(await fetch(url, opts), url).text(); },
+      async fetchJson(url, opts) { return httpCheck(await fetch(url, opts), url).json(); },
+      // For client-rendered search pages: the live DOM after navigate+render. Guards
+      // against answering a stale/wrong page — if the tab isn't on the expected
+      // search path, throw so the recipe navigates first instead of returning
+      // results for whatever happens to be loaded.
+      async pageHtml(expectedUrl) {
+        if (typeof document === "undefined") return "";
+        if (expectedUrl) {
+          try {
+            const cur = new URL(location.href).pathname;
+            const want = new URL(expectedUrl, location.href).pathname;
+            if (cur !== want) { const e = new Error("tab is on " + location.href + " — navigate to " + expectedUrl + " first"); e.status = 0; throw e; }
+          } catch (err) { if (err && err.status === 0) throw err; }
+        }
+        return document.documentElement.outerHTML;
+      },
     };
   }
   const pipelines = {
@@ -103,9 +126,17 @@
     if (!a) return { error: "unknown_source", source };
     if (!a.capabilities || !a.capabilities[op]) return { error: "unsupported", source, op };
     ctx = ctx || makeBrowserCtx();
-    if (typeof a[op] === "function") return a[op](args || {}, ctx);
-    if (pipelines[op]) return pipelines[op](a, args || {}, ctx);
-    return { error: "unsupported", source, op };
+    try {
+      if (typeof a[op] === "function") return await a[op](args || {}, ctx);
+      if (pipelines[op]) return await pipelines[op](a, args || {}, ctx);
+      return { error: "unsupported", source, op };
+    } catch (e) {
+      // 429 → rate_limited; navigate-mismatch (status 0) and any fetch/parse
+      // failure → a structured error instead of a thrown exception or silent empty.
+      const status = e && e.status;
+      const kind = status === 429 ? "rate_limited" : (status === 0 ? "dom_mismatch" : "fetch_failed");
+      return { error: kind, source, op, status: status == null ? null : status, note: String((e && e.message) || e) };
+    }
   }
 
   async function mapPool(items, limit, fn) {
@@ -123,6 +154,27 @@
   function parseDocHtml(html) { return new DOMParser().parseFromString(html || "", "text/html"); }
   function metaAll(doc, name) {
     return Array.prototype.map.call(doc.querySelectorAll('meta[name="' + name + '"]'), (e) => (e.getAttribute("content") || "").trim()).filter(Boolean);
+  }
+  // Case-insensitive meta lookup (Dublin Core casing varies: dc.Title / DC.Title / dc.title).
+  function metaCI(doc, nameLower) {
+    const out = [];
+    Array.prototype.forEach.call(doc.querySelectorAll("meta[name]"), (e) => {
+      if ((e.getAttribute("name") || "").toLowerCase() === nameLower) {
+        const c = (e.getAttribute("content") || "").trim();
+        if (c) out.push(c);
+      }
+    });
+    return out;
+  }
+  function dcDoi(doc) {
+    let found = null;
+    Array.prototype.forEach.call(doc.querySelectorAll("meta[name]"), (e) => {
+      if (found) return;
+      if ((e.getAttribute("name") || "").toLowerCase() === "dc.identifier" && (e.getAttribute("scheme") || "").toLowerCase() === "doi") {
+        found = (e.getAttribute("content") || "").trim() || null;
+      }
+    });
+    return found;
   }
   function yearFromMeta(doc, doi) {
     const date = metaAll(doc, "citation_publication_date")[0] || metaAll(doc, "citation_date")[0] ||
@@ -151,21 +203,21 @@
     opts = opts || {};
     const doc = parseDocHtml(html);
     // Only accept the DOI-schemed identifier; never fall back to publisher-id/submission-id.
-    const doiEl = doc.querySelector('meta[name="dc.Identifier"][scheme="doi"]');
-    const doi = doiEl ? (doiEl.getAttribute("content") || "").trim() || null : null;
-    const dt = metaAll(doc, "dc.Date")[0] || "";
+    // Case-insensitive throughout (dc.* casing varies across Atypon tenants).
+    const doi = dcDoi(doc);
+    const dt = metaCI(doc, "dc.date")[0] || "";
     const ym = /(\d{4})/.exec(dt) || /(20\d{2}|19\d{2})/.exec(doi || "");
     function fill(t) { return t && doi ? t.replace("{doi}", doi) : null; }
     return normalizeArticle({
       source: source,
-      title: metaAll(doc, "dc.Title")[0] || null,
-      authors: metaAll(doc, "dc.Creator").map((s) => s.replace(/\s+/g, " ").trim()),
+      title: metaCI(doc, "dc.title")[0] || null,
+      authors: metaCI(doc, "dc.creator").map((s) => s.replace(/\s+/g, " ").trim()),
       year: ym ? ym[1] : null,
-      venue: metaAll(doc, "citation_journal_title")[0] || metaAll(doc, "dc.Source")[0] || null,
+      venue: metaCI(doc, "citation_journal_title")[0] || metaCI(doc, "dc.source")[0] || null,
       doi: doi,
       url: fill(opts.urlTemplate),
       pdfUrl: fill(opts.pdfTemplate),
-      abstract: metaAll(doc, "dc.Description")[0] || null,
+      abstract: metaCI(doc, "dc.description")[0] || null,
     });
   }
   function harvestHrefs(html, origin, matchRe) {
@@ -233,7 +285,7 @@
       // Client-rendered search pages (e.g. taylorfrancis.com books) have no result
       // anchors in the fetched HTML — read the live rendered DOM instead. The SKILL
       // recipe navigates to listUrl and waits for render before injecting.
-      const html = cfg.liveSearchDom && ctx.pageHtml ? await ctx.pageHtml() : await ctx.fetchText(listUrl);
+      const html = cfg.liveSearchDom && ctx.pageHtml ? await ctx.pageHtml(listUrl) : await ctx.fetchText(listUrl);
       const urls = harvestResultUrls(html).slice(0, pageSize);
       const articles = (await mapPool(urls, 3, async (u) => {
         try { return parseArticleMeta(await ctx.fetchText(u)); } catch (e) { return null; }
