@@ -41,5 +41,33 @@
     return { query: p.query, source: p.source, pagination: { page: p.page || 1, total: p.total == null ? null : p.total, hasNext: !!hasNext }, articles };
   }
 
-  return { _adapters, register, get, normalizeArticle, makeSearchResult };
+  function canonicalDoi(s) {
+    if (!s) return null;
+    let d = String(s).trim().toLowerCase();
+    d = d.replace(/^https?:\/\/(dx\.)?doi\.org\//, "").replace(/^doi:/, "");
+    return d || null;
+  }
+  function normalizeTitle(s) {
+    if (!s) return "";
+    return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .toLowerCase().replace(/ı/g, "i").replace(/[^a-z0-9]+/g, " ").trim();
+  }
+  function dedupeArticles(articles) {
+    const byKey = new Map();
+    const order = [];
+    (articles || []).forEach((art) => {
+      const key = canonicalDoi(art.doi) || "t:" + normalizeTitle(art.title);
+      if (!byKey.has(key)) {
+        const copy = Object.assign({}, art, { sources: [art.source].filter(Boolean) });
+        byKey.set(key, copy); order.push(key);
+      } else {
+        const cur = byKey.get(key);
+        Object.keys(art).forEach((f) => { if (cur[f] == null && art[f] != null) cur[f] = art[f]; });
+        if (art.source && cur.sources.indexOf(art.source) === -1) cur.sources.push(art.source);
+      }
+    });
+    return order.map((k) => byKey.get(k));
+  }
+
+  return { _adapters, register, get, normalizeArticle, makeSearchResult, canonicalDoi, normalizeTitle, dedupeArticles };
 });
