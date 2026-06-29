@@ -16,9 +16,10 @@ require("../scripts/adapters/crossref.js");
 require("../scripts/adapters/europepmc.js");
 require("../scripts/adapters/semanticscholar.js");
 require("../scripts/adapters/arxiv.js");
+require("../scripts/adapters/biorxiv.js");
 
 const OPS = ["search", "advancedSearch", "readFulltext", "extractReferences"];
-const SOURCES = ["pubmed", "emerald", "brill", "tandf", "wiley", "scholar", "tandfbooks", "openalex", "crossref", "europepmc", "semanticscholar", "arxiv"];
+const SOURCES = ["pubmed", "emerald", "brill", "tandf", "wiley", "scholar", "tandfbooks", "openalex", "crossref", "europepmc", "semanticscholar", "arxiv", "biorxiv"];
 
 test("every adapter registers, declares capabilities, and has op methods or pipelines", () => {
   SOURCES.forEach((s) => {
@@ -60,6 +61,7 @@ test("each adapter reference doc exists and records the home origin", () => {
   assert.ok(fs.readFileSync(path.join(root, "reference", "europepmc.md"), "utf8").includes("ebi.ac.uk/europepmc"));
   assert.ok(fs.readFileSync(path.join(root, "reference", "semanticscholar.md"), "utf8").includes("api.semanticscholar.org"));
   assert.ok(fs.readFileSync(path.join(root, "reference", "arxiv.md"), "utf8").includes("export.arxiv.org"));
+  assert.ok(fs.readFileSync(path.join(root, "reference", "biorxiv.md"), "utf8").includes("bioRxiv"));
   assert.ok(pm.includes("https://eutils.ncbi.nlm.nih.gov"));
   assert.ok(em.includes("https://www.emerald.com"));
   assert.ok(br.includes("https://brill.com"));
