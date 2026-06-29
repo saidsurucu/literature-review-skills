@@ -11,9 +11,11 @@ require("../scripts/adapters/tandf.js");
 require("../scripts/adapters/wiley.js");
 require("../scripts/adapters/scholar.js");
 require("../scripts/adapters/tandfbooks.js");
+require("../scripts/adapters/openalex.js");
+require("../scripts/adapters/crossref.js");
 
 const OPS = ["search", "advancedSearch", "readFulltext", "extractReferences"];
-const SOURCES = ["pubmed", "emerald", "brill", "tandf", "wiley", "scholar", "tandfbooks"];
+const SOURCES = ["pubmed", "emerald", "brill", "tandf", "wiley", "scholar", "tandfbooks", "openalex", "crossref"];
 
 test("every adapter registers, declares capabilities, and has op methods or pipelines", () => {
   SOURCES.forEach((s) => {
@@ -47,7 +49,11 @@ test("each adapter reference doc exists and records the home origin", () => {
   const wl = fs.readFileSync(path.join(root, "reference", "wiley.md"), "utf8");
   const gs = fs.readFileSync(path.join(root, "reference", "scholar.md"), "utf8");
   const tb = fs.readFileSync(path.join(root, "reference", "tandfbooks.md"), "utf8");
+  const oa = fs.readFileSync(path.join(root, "reference", "openalex.md"), "utf8");
+  const cr = fs.readFileSync(path.join(root, "reference", "crossref.md"), "utf8");
   assert.ok(tb.includes("https://www.taylorfrancis.com"));
+  assert.ok(oa.includes("https://api.openalex.org"));
+  assert.ok(cr.includes("https://api.crossref.org"));
   assert.ok(pm.includes("https://eutils.ncbi.nlm.nih.gov"));
   assert.ok(em.includes("https://www.emerald.com"));
   assert.ok(br.includes("https://brill.com"));

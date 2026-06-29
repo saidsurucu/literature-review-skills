@@ -1,0 +1,36 @@
+{
+  "_provenance": "api.crossref.org/works?query=knowledge management — captured 2026-06-29 (trimmed to 2 items, with a reference array)",
+  "message": {
+    "total-results": 4917950,
+    "items": [
+      {
+        "DOI": "10.2307/3250961",
+        "title": ["Knowledge Management and Knowledge Management Systems"],
+        "container-title": ["MIS Quarterly"],
+        "issued": { "date-parts": [[2001, 3]] },
+        "type": "journal-article",
+        "is-referenced-by-count": 9001,
+        "URL": "https://doi.org/10.2307/3250961",
+        "abstract": "<jats:p>Knowledge management systems overview.</jats:p>",
+        "author": [
+          { "given": "Maryam", "family": "Alavi" },
+          { "given": "Dorothy E.", "family": "Leidner" }
+        ],
+        "link": [{ "URL": "https://example.org/oa/3250961.pdf", "content-type": "application/pdf" }],
+        "reference": [
+          { "unstructured": "Nonaka I. 1994. A dynamic theory of organizational knowledge creation.", "DOI": "10.1287/orsc.5.1.14" },
+          { "author": "Grant", "year": "1996", "article-title": "Toward a knowledge-based theory of the firm" }
+        ]
+      },
+      {
+        "DOI": "10.1109/2.660190",
+        "title": ["Enterprise knowledge management"],
+        "container-title": ["Computer"],
+        "issued": { "date-parts": [[1998]] },
+        "type": "journal-article",
+        "is-referenced-by-count": 540,
+        "author": [{ "given": "Daniel E.", "family": "O'Leary" }]
+      }
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "_provenance": "api.openalex.org/works?search=knowledge management — captured 2026-06-29 (trimmed to 2 results)",
+  "meta": { "count": 6629415, "page": 1, "per_page": 25 },
+  "results": [
+    {
+      "id": "https://openalex.org/W2150220236",
+      "doi": "https://doi.org/10.2307/3250961",
+      "display_name": "<i>Review</i>: Knowledge Management and Knowledge Management Systems",
+      "publication_year": 2001,
+      "type": "article",
+      "cited_by_count": 9001,
+      "primary_location": { "source": { "display_name": "MIS Quarterly" } },
+      "best_oa_location": { "pdf_url": "https://example.org/oa/3250961.pdf" },
+      "authorships": [
+        { "author": { "display_name": "Maryam Alavi" } },
+        { "author": { "display_name": "Dorothy E. Leidner" } }
+      ],
+      "abstract_inverted_index": { "Knowledge": [0], "management": [1], "systems": [2] },
+      "referenced_works": ["https://openalex.org/W111", "https://openalex.org/W222"]
+    },
+    {
+      "id": "https://openalex.org/W2000000002",
+      "doi": null,
+      "display_name": "Enterprise knowledge management",
+      "publication_year": 1998,
+      "type": "article",
+      "cited_by_count": 540,
+      "primary_location": { "source": { "display_name": "Computer" } },
+      "best_oa_location": {},
+      "authorships": [{ "author": { "display_name": "Daniel E. O'Leary" } }],
+      "abstract_inverted_index": null,
+      "referenced_works": []
+    }
+  ]
+}
