@@ -10,9 +10,10 @@ require("../scripts/adapters/brill.js");
 require("../scripts/adapters/tandf.js");
 require("../scripts/adapters/wiley.js");
 require("../scripts/adapters/scholar.js");
+require("../scripts/adapters/tandfbooks.js");
 
 const OPS = ["search", "advancedSearch", "readFulltext", "extractReferences"];
-const SOURCES = ["pubmed", "emerald", "brill", "tandf", "wiley", "scholar"];
+const SOURCES = ["pubmed", "emerald", "brill", "tandf", "wiley", "scholar", "tandfbooks"];
 
 test("every adapter registers, declares capabilities, and has op methods or pipelines", () => {
   SOURCES.forEach((s) => {
@@ -45,6 +46,8 @@ test("each adapter reference doc exists and records the home origin", () => {
   const tf = fs.readFileSync(path.join(root, "reference", "tandf.md"), "utf8");
   const wl = fs.readFileSync(path.join(root, "reference", "wiley.md"), "utf8");
   const gs = fs.readFileSync(path.join(root, "reference", "scholar.md"), "utf8");
+  const tb = fs.readFileSync(path.join(root, "reference", "tandfbooks.md"), "utf8");
+  assert.ok(tb.includes("https://www.taylorfrancis.com"));
   assert.ok(pm.includes("https://eutils.ncbi.nlm.nih.gov"));
   assert.ok(em.includes("https://www.emerald.com"));
   assert.ok(br.includes("https://brill.com"));

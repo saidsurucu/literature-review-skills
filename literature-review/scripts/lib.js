@@ -73,6 +73,8 @@
     return {
       async fetchText(url, opts) { const r = await fetch(url, opts); return r.text(); },
       async fetchJson(url, opts) { const r = await fetch(url, opts); return r.json(); },
+      // For client-rendered search pages: the live DOM after navigation+render.
+      async pageHtml() { return typeof document !== "undefined" ? document.documentElement.outerHTML : ""; },
     };
   }
   const pipelines = {
@@ -228,7 +230,10 @@
     function harvestResultUrls(html) { return harvestHrefs(html, origin, cfg.linkMatch); }
     function parseReferences(html) { return parseHighwireReferences(html, cfg.refSelectors); }
     async function searchFromUrl(listUrl, query, page, ctx) {
-      const html = await ctx.fetchText(listUrl);
+      // Client-rendered search pages (e.g. taylorfrancis.com books) have no result
+      // anchors in the fetched HTML — read the live rendered DOM instead. The SKILL
+      // recipe navigates to listUrl and waits for render before injecting.
+      const html = cfg.liveSearchDom && ctx.pageHtml ? await ctx.pageHtml() : await ctx.fetchText(listUrl);
       const urls = harvestResultUrls(html).slice(0, pageSize);
       const articles = (await mapPool(urls, 3, async (u) => {
         try { return parseArticleMeta(await ctx.fetchText(u)); } catch (e) { return null; }
@@ -250,7 +255,7 @@
     }
     return {
       source: source, origin: origin, pageSize: pageSize,
-      capabilities: { search: true, advancedSearch: true, readFulltext: true, extractReferences: true },
+      capabilities: cfg.capabilities || { search: true, advancedSearch: true, readFulltext: true, extractReferences: true },
       fields: cfg.fields || {}, buildSearchUrl, buildAdvancedQuery, buildAdvancedUrl,
       parseArticleMeta, harvestResultUrls, parseReferences, search, advancedSearch, extractReferences, readFulltext,
     };
