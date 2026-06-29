@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!-- provenance: E-utilities efetch db=pubmed id=40000001 retmode=xml, captured 2026-06-29 (trimmed to refs) -->
+<PubmedArticleSet><PubmedArticle><ReferenceList>
+  <Reference><Citation>Smith J. Foo. J Tests. 2020;1:1-2.</Citation></Reference>
+  <Reference><Citation>Doe A. Bar. J Tests. 2021;2:3-4.</Citation></Reference>
+</ReferenceList></PubmedArticle></PubmedArticleSet>

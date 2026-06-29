@@ -37,3 +37,31 @@ test("parseEsummary maps uids to normalized articles", () => {
   assert.equal(a.doi, "10.1234/abc");
   assert.equal(a.url, "https://pubmed.ncbi.nlm.nih.gov/40000001/");
 });
+
+test("criteriaToTerm translates advanced criteria into a term", () => {
+  const term = PUBMED.criteriaToTerm([
+    { field: "author", term: "Lovelace A" },
+    { field: "title", term: "crispr", op: "AND" },
+  ]);
+  assert.equal(term, "Lovelace A[Author] AND crispr[Title]");
+});
+
+test("parseReferencesXml extracts citation strings", () => {
+  const refs = PUBMED.parseReferencesXml(fx("pubmed-efetch.xml"));
+  assert.equal(refs.length, 2);
+  assert.match(refs[0].raw, /Smith J/);
+});
+
+test("search op composes esearch+esummary via ctx", async () => {
+  const ctx = {
+    async fetchJson(u) {
+      if (u.includes("esearch")) return JSON.parse(fx("pubmed-esearch.json"));
+      return JSON.parse(fx("pubmed-esummary.json"));
+    },
+    async fetchText() { return fx("pubmed-efetch.xml"); },
+  };
+  const r = await PUBMED.search({ query: "crispr", page: 1 }, ctx);
+  assert.equal(r.source, "pubmed");
+  assert.equal(r.pagination.total, 123);
+  assert.equal(r.articles[0].title, "A CRISPR Study");
+});
