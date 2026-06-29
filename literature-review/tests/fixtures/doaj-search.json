@@ -1,0 +1,8 @@
+{ "_provenance":"doaj.org/api/search/articles/knowledge management — 2026-06-29 (trimmed)",
+  "total":83159, "results":[
+  {"bibjson":{"title":"A Robust Information Life Cycle Management","year":"2018",
+    "journal":{"title":"Inventions"},
+    "identifier":[{"type":"doi","id":"10.3390/inventions3040071"}],
+    "author":[{"name":"Jane Roe"},{"name":"John Doe"}],
+    "abstract":"We propose a robust information life cycle.",
+    "link":[{"type":"fulltext","url":"https://www.mdpi.com/2411-5134/3/4/71/pdf"}]}}]}

@@ -17,9 +17,12 @@ require("../scripts/adapters/europepmc.js");
 require("../scripts/adapters/semanticscholar.js");
 require("../scripts/adapters/arxiv.js");
 require("../scripts/adapters/biorxiv.js");
+["doaj", "datacite", "openlibrary", "hal", "unpaywall", "opencitations", "googlebooks", "core"]
+  .forEach((s) => require("../scripts/adapters/" + s + ".js"));
 
 const OPS = ["search", "advancedSearch", "readFulltext", "extractReferences"];
-const SOURCES = ["pubmed", "emerald", "brill", "tandf", "wiley", "scholar", "tandfbooks", "openalex", "crossref", "europepmc", "semanticscholar", "arxiv", "biorxiv"];
+const SOURCES = ["pubmed", "emerald", "brill", "tandf", "wiley", "scholar", "tandfbooks", "openalex", "crossref", "europepmc", "semanticscholar", "arxiv", "biorxiv",
+  "doaj", "datacite", "openlibrary", "hal", "unpaywall", "opencitations", "googlebooks", "core"];
 
 test("every adapter registers, declares capabilities, and has op methods or pipelines", () => {
   SOURCES.forEach((s) => {
@@ -62,6 +65,9 @@ test("each adapter reference doc exists and records the home origin", () => {
   assert.ok(fs.readFileSync(path.join(root, "reference", "semanticscholar.md"), "utf8").includes("api.semanticscholar.org"));
   assert.ok(fs.readFileSync(path.join(root, "reference", "arxiv.md"), "utf8").includes("export.arxiv.org"));
   assert.ok(fs.readFileSync(path.join(root, "reference", "biorxiv.md"), "utf8").includes("bioRxiv"));
+  ["doaj", "datacite", "openlibrary", "hal", "unpaywall", "opencitations", "googlebooks", "core"].forEach((s) => {
+    assert.ok(fs.existsSync(path.join(root, "reference", s + ".md")), s + ".md reference doc missing");
+  });
   assert.ok(pm.includes("https://eutils.ncbi.nlm.nih.gov"));
   assert.ok(em.includes("https://www.emerald.com"));
   assert.ok(br.includes("https://brill.com"));
@@ -74,6 +80,10 @@ test("committed HTML/JSON fixtures carry provenance", () => {
   const dir = path.join(__dirname, "fixtures");
   fs.readdirSync(dir).forEach((f) => {
     const txt = fs.readFileSync(path.join(dir, f), "utf8");
+    // Some fixtures mirror APIs that return a bare top-level JSON array, which
+    // cannot carry a _provenance key — those are exempt (provenance lives in the
+    // adapter's reference doc instead).
+    if (txt.trimStart().startsWith("[")) return;
     assert.match(txt, /provenance|captured/i, f + " missing provenance header");
   });
 });
