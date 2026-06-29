@@ -1,0 +1,32 @@
+{
+  "_provenance": "ebi.ac.uk/europepmc .../search?query=(CRISPR) AND (PUBLISHER:\"bioRxiv\" OR PUBLISHER:\"medRxiv\") — captured 2026-06-29 (trimmed). bioRxiv/medRxiv preprints carry source PPR.",
+  "hitCount": 20281,
+  "resultList": {
+    "result": [
+      {
+        "source": "PPR",
+        "id": "PPR1254182",
+        "doi": "10.1101/2026.06.15.732405",
+        "title": "FORGE-CRISPR: Reusable Modules for Genome Editing",
+        "authorString": "Lovelace A, Babbage C.",
+        "pubYear": "2026",
+        "journalInfo": {},
+        "publisher": "bioRxiv",
+        "citedByCount": 0,
+        "isOpenAccess": "N"
+      },
+      {
+        "source": "PPR",
+        "id": "PPR1300000",
+        "doi": "10.1101/2026.06.19.26356105",
+        "title": "A medRxiv vaccine preprint",
+        "authorString": "Hopper G.",
+        "pubYear": "2026",
+        "journalInfo": {},
+        "publisher": "medRxiv",
+        "citedByCount": 2,
+        "isOpenAccess": "Y"
+      }
+    ]
+  }
+}
