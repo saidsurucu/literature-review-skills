@@ -29,3 +29,12 @@ test("dedupeArticles falls back to title when DOI missing", () => {
   ]);
   assert.equal(merged.length, 1);
 });
+
+test("dedupeArticles does NOT collapse records with neither DOI nor title", () => {
+  const merged = LR.dedupeArticles([
+    { source: "a", title: null, doi: null },
+    { source: "b", title: "", doi: null },
+    { source: "c", title: null, doi: null },
+  ]);
+  assert.equal(merged.length, 3); // each anonymous record kept distinct
+});

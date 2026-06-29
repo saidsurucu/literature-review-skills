@@ -17,6 +17,23 @@ test("run dispatches to an adapter op method when present", async () => {
   assert.equal((await LR.run("direct", "search", {})).ok, 1);
 });
 
+test("run wraps a thrown HTTP error into a structured error (429 → rate_limited)", async () => {
+  LR.register("boom", {
+    capabilities: { search: true },
+    async search() { const e = new Error("HTTP 429"); e.status = 429; throw e; },
+  });
+  const r = await LR.run("boom", "search", {}, { async fetchJson() {} });
+  assert.equal(r.error, "rate_limited");
+  assert.equal(r.status, 429);
+});
+
+test("run turns any other op failure into fetch_failed (no thrown exception)", async () => {
+  LR.register("boom2", { capabilities: { search: true }, async search() { throw new Error("network down"); } });
+  const r = await LR.run("boom2", "search", {}, {});
+  assert.equal(r.error, "fetch_failed");
+  assert.match(r.note, /network down/);
+});
+
 test("generic search pipeline builds url, fetches, parses, paginates", async () => {
   LR.register("dom", {
     source: "dom", pageSize: 2, capabilities: { search: true },
