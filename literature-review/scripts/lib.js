@@ -21,5 +21,25 @@
     return adapter;
   }
   function get(source) { return _adapters[source] || null; }
-  return { _adapters, register, get };
+
+  const ARTICLE_FIELDS = ["source", "title", "authors", "year", "venue", "doi", "url", "abstract", "type", "citationCount", "pdfUrl"];
+  function normalizeArticle(raw) {
+    raw = raw || {};
+    const a = {};
+    ARTICLE_FIELDS.forEach((f) => {
+      if (f === "authors") a.authors = Array.isArray(raw.authors) ? raw.authors : [];
+      else a[f] = raw[f] == null ? null : raw[f];
+    });
+    return a;
+  }
+  function makeSearchResult(p) {
+    p = p || {};
+    const articles = (p.articles || []).map(normalizeArticle);
+    let hasNext;
+    if (p.total == null) hasNext = articles.length >= (p.pageSize || articles.length);
+    else hasNext = (p.page || 1) * (p.pageSize || articles.length) < p.total;
+    return { query: p.query, source: p.source, pagination: { page: p.page || 1, total: p.total == null ? null : p.total, hasNext: !!hasNext }, articles };
+  }
+
+  return { _adapters, register, get, normalizeArticle, makeSearchResult };
 });
