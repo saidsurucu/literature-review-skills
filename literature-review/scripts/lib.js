@@ -69,5 +69,42 @@
     return order.map((k) => byKey.get(k));
   }
 
-  return { _adapters, register, get, normalizeArticle, makeSearchResult, canonicalDoi, normalizeTitle, dedupeArticles };
+  function makeBrowserCtx() {
+    return {
+      async fetchText(url, opts) { const r = await fetch(url, opts); return r.text(); },
+      async fetchJson(url, opts) { const r = await fetch(url, opts); return r.json(); },
+    };
+  }
+  const pipelines = {
+    async search(a, args, ctx) {
+      const html = await ctx.fetchText(a.buildSearchUrl(args));
+      const res = a.parseResults(html, args);
+      return makeSearchResult({ query: args.query, source: a.source, page: args.page || 1, pageSize: a.pageSize, total: res.total, articles: res.articles });
+    },
+    async advancedSearch(a, args, ctx) {
+      const html = await ctx.fetchText(a.buildAdvancedUrl(args.criteria, args));
+      const res = a.parseResults(html, args);
+      return makeSearchResult({ query: a.buildAdvancedQuery(args.criteria, args), source: a.source, page: args.page || 1, pageSize: a.pageSize, total: res.total, articles: res.articles });
+    },
+    async extractReferences(a, args, ctx) {
+      const html = await ctx.fetchText(args.url);
+      return { source: a.source, url: args.url, references: a.parseReferences(html) };
+    },
+    async readFulltext(a, args, ctx) {
+      const pdfUrl = await a.locateFulltext(args, ctx);
+      if (!pdfUrl) return { error: "no_fulltext", source: a.source, note: "subscription/login required" };
+      return { source: a.source, pdfUrl };
+    },
+  };
+  async function run(source, op, args, ctx) {
+    const a = get(source);
+    if (!a) return { error: "unknown_source", source };
+    if (!a.capabilities || !a.capabilities[op]) return { error: "unsupported", source, op };
+    ctx = ctx || makeBrowserCtx();
+    if (typeof a[op] === "function") return a[op](args || {}, ctx);
+    if (pipelines[op]) return pipelines[op](a, args || {}, ctx);
+    return { error: "unsupported", source, op };
+  }
+
+  return { _adapters, register, get, normalizeArticle, makeSearchResult, canonicalDoi, normalizeTitle, dedupeArticles, makeBrowserCtx, pipelines, run };
 });
