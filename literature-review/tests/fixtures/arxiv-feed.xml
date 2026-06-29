@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- provenance: export.arxiv.org/api/query?search_query=all:knowledge management — captured 2026-06-29 (trimmed to 2 entries) -->
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom">
+  <opensearch:totalResults>171039</opensearch:totalResults>
+  <entry>
+    <id>http://arxiv.org/abs/2502.01656v1</id>
+    <published>2025-02-03T00:00:00Z</published>
+    <title>Imperfect Knowledge Management — A Case Study</title>
+    <summary>We study imperfect knowledge management in databases.</summary>
+    <author><name>Ada Lovelace</name></author>
+    <author><name>Charles Babbage</name></author>
+    <link title="pdf" href="https://arxiv.org/pdf/2502.01656v1"/>
+    <link href="https://arxiv.org/abs/2502.01656v1"/>
+    <category term="cs.DB"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2401.00002v2</id>
+    <published>2024-01-01T00:00:00Z</published>
+    <title>Organizational Knowledge Graphs</title>
+    <summary>A method for organizational knowledge graphs.</summary>
+    <author><name>Grace Hopper</name></author>
+    <link title="pdf" href="https://arxiv.org/pdf/2401.00002v2"/>
+    <category term="cs.AI"/>
+    <arxiv:doi>10.1000/xyz123</arxiv:doi>
+  </entry>
+</feed>
