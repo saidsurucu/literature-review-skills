@@ -1,0 +1,5 @@
+{ "_provenance":"api.core.ac.uk/v3/search/works (shape from v3 docs; needs live key to verify) — 2026-06-29",
+  "totalHits":540000, "results":[
+  {"title":"Open access knowledge management","authors":[{"name":"Ada Lovelace"}],"yearPublished":2019,
+   "doi":"10.1000/core123","downloadUrl":"https://core.ac.uk/download/123.pdf","publisher":"CORE",
+   "abstract":"An OA paper on knowledge management."}]}

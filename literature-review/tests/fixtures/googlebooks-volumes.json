@@ -1,0 +1,7 @@
+{ "_provenance":"googleapis.com/books/v1/volumes?q=knowledge management — 2026-06-29 (trimmed)",
+  "totalItems":2310000, "items":[
+  {"id":"abcDEF","volumeInfo":{"title":"Working Knowledge","subtitle":"How Organizations Manage What They Know",
+    "authors":["Thomas H. Davenport","Laurence Prusak"],"publishedDate":"2000","publisher":"Harvard Business Press",
+    "description":"A book on organizational knowledge.","infoLink":"https://books.google.com/books?id=abcDEF",
+    "industryIdentifiers":[{"type":"ISBN_13","identifier":"9781578513017"}]},
+   "accessInfo":{"pdf":{"isAvailable":false}}}]}

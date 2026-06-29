@@ -1,0 +1,9 @@
+{ "_provenance":"api.datacite.org/dois?query=knowledge management — 2026-06-29 (trimmed)",
+  "meta":{"total":125302}, "data":[
+  {"attributes":{"doi":"10.17863/cam.130560","publicationYear":2026,
+    "titles":[{"title":"Care-pathway decision support dataset"}],
+    "types":{"resourceTypeGeneral":"Dataset"},
+    "publisher":"Apollo - University of Cambridge Repository",
+    "creators":[{"name":"Smith, Ada"}],
+    "descriptions":[{"description":"A dataset of care pathways."}],
+    "url":"https://www.repository.cam.ac.uk/handle/1810/130560"}}]}

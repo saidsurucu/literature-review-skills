@@ -1,0 +1,6 @@
+{ "_provenance":"api.archives-ouvertes.fr/search?q=knowledge management — 2026-06-29 (trimmed)",
+  "response":{"numFound":26352,"docs":[
+  {"title_s":["The Influence of Knowledge Management"],"authFullName_s":["Marie Curie","Henri Poincare"],
+   "producedDateY_i":2018,"doiId_s":"10.1000/hal123","uri_s":"https://hal.science/hal-05399488v1",
+   "abstract_s":["We study knowledge management influence."],"journalTitle_s":"Revue Francaise",
+   "docType_s":"ART","fileMain_s":"https://hal.science/hal-05399488v1/document"}]}}
