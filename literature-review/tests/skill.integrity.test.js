@@ -6,9 +6,13 @@ const root = path.join(__dirname, "..");
 const LR = require("../scripts/lib.js");
 require("../scripts/adapters/pubmed.js");
 require("../scripts/adapters/emerald.js");
+require("../scripts/adapters/brill.js");
+require("../scripts/adapters/tandf.js");
+require("../scripts/adapters/wiley.js");
+require("../scripts/adapters/scholar.js");
 
 const OPS = ["search", "advancedSearch", "readFulltext", "extractReferences"];
-const SOURCES = ["pubmed", "emerald"];
+const SOURCES = ["pubmed", "emerald", "brill", "tandf", "wiley", "scholar"];
 
 test("every adapter registers, declares capabilities, and has op methods or pipelines", () => {
   SOURCES.forEach((s) => {
@@ -37,8 +41,16 @@ test("SKILL.md description names every v1 source and lists the capability matrix
 test("each adapter reference doc exists and records the home origin", () => {
   const pm = fs.readFileSync(path.join(root, "reference", "pubmed.md"), "utf8");
   const em = fs.readFileSync(path.join(root, "reference", "emerald.md"), "utf8");
+  const br = fs.readFileSync(path.join(root, "reference", "brill.md"), "utf8");
+  const tf = fs.readFileSync(path.join(root, "reference", "tandf.md"), "utf8");
+  const wl = fs.readFileSync(path.join(root, "reference", "wiley.md"), "utf8");
+  const gs = fs.readFileSync(path.join(root, "reference", "scholar.md"), "utf8");
   assert.ok(pm.includes("https://eutils.ncbi.nlm.nih.gov"));
   assert.ok(em.includes("https://www.emerald.com"));
+  assert.ok(br.includes("https://brill.com"));
+  assert.ok(tf.includes("https://www.tandfonline.com"));
+  assert.ok(wl.includes("https://onlinelibrary.wiley.com"));
+  assert.ok(gs.includes("https://scholar.google.com"));
 });
 
 test("committed HTML/JSON fixtures carry provenance", () => {

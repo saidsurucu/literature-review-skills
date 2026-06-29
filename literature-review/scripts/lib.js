@@ -117,5 +117,144 @@
     return results;
   }
 
-  return { _adapters, register, get, normalizeArticle, makeSearchResult, canonicalDoi, normalizeTitle, dedupeArticles, makeBrowserCtx, pipelines, run, mapPool };
+  // ---- Shared publisher (Highwire citation_* meta) tooling ----
+  function parseDocHtml(html) { return new DOMParser().parseFromString(html || "", "text/html"); }
+  function metaAll(doc, name) {
+    return Array.prototype.map.call(doc.querySelectorAll('meta[name="' + name + '"]'), (e) => (e.getAttribute("content") || "").trim()).filter(Boolean);
+  }
+  function yearFromMeta(doc, doi) {
+    const date = metaAll(doc, "citation_publication_date")[0] || metaAll(doc, "citation_date")[0] ||
+      metaAll(doc, "citation_online_date")[0] || metaAll(doc, "citation_year")[0] || "";
+    const ym = /(\d{4})/.exec(date);
+    if (ym) return ym[1];
+    const dm = /(20\d{2}|19\d{2})/.exec(doi || ""); // some publishers (Emerald) embed the year in the DOI
+    return dm ? dm[1] : null;
+  }
+  function parseHighwireArticle(html, source) {
+    const doc = parseDocHtml(html);
+    const doi = metaAll(doc, "citation_doi")[0] || null;
+    return normalizeArticle({
+      source: source,
+      title: metaAll(doc, "citation_title")[0] || null,
+      authors: metaAll(doc, "citation_author"),
+      year: yearFromMeta(doc, doi),
+      venue: metaAll(doc, "citation_journal_title")[0] || null,
+      doi: doi,
+      url: metaAll(doc, "citation_abstract_html_url")[0] || metaAll(doc, "citation_fulltext_html_url")[0] || null,
+      pdfUrl: metaAll(doc, "citation_pdf_url")[0] || null,
+      abstract: metaAll(doc, "citation_abstract")[0] || null,
+    });
+  }
+  function parseDublinCoreArticle(html, source, opts) {
+    opts = opts || {};
+    const doc = parseDocHtml(html);
+    // Only accept the DOI-schemed identifier; never fall back to publisher-id/submission-id.
+    const doiEl = doc.querySelector('meta[name="dc.Identifier"][scheme="doi"]');
+    const doi = doiEl ? (doiEl.getAttribute("content") || "").trim() || null : null;
+    const dt = metaAll(doc, "dc.Date")[0] || "";
+    const ym = /(\d{4})/.exec(dt) || /(20\d{2}|19\d{2})/.exec(doi || "");
+    function fill(t) { return t && doi ? t.replace("{doi}", doi) : null; }
+    return normalizeArticle({
+      source: source,
+      title: metaAll(doc, "dc.Title")[0] || null,
+      authors: metaAll(doc, "dc.Creator").map((s) => s.replace(/\s+/g, " ").trim()),
+      year: ym ? ym[1] : null,
+      venue: metaAll(doc, "citation_journal_title")[0] || metaAll(doc, "dc.Source")[0] || null,
+      doi: doi,
+      url: fill(opts.urlTemplate),
+      pdfUrl: fill(opts.pdfTemplate),
+      abstract: metaAll(doc, "dc.Description")[0] || null,
+    });
+  }
+  function harvestHrefs(html, origin, matchRe) {
+    const doc = parseDocHtml(html);
+    const seen = []; const out = [];
+    doc.querySelectorAll("a[href]").forEach((a) => {
+      let href = a.getAttribute("href") || "";
+      if (!matchRe.test(href)) return;
+      if (href.indexOf("http") !== 0) href = origin + href;
+      href = href.split("#")[0].split("?")[0];
+      if (seen.indexOf(href) === -1) { seen.push(href); out.push(href); }
+    });
+    return out;
+  }
+  function parseHighwireReferences(html, refSelectors) {
+    const doc = parseDocHtml(html);
+    const metas = metaAll(doc, "citation_reference");
+    if (metas.length) return metas.map((r) => ({ raw: r, title: null, authors: null, year: null, doi: null, url: null }));
+    const out = [];
+    (refSelectors || []).forEach((sel) => {
+      if (out.length) return;
+      doc.querySelectorAll(sel).forEach((li) => {
+        const raw = (li.textContent || "").replace(/\s+/g, " ").trim();
+        if (raw) out.push({ raw: raw, title: null, authors: null, year: null, doi: null, url: null });
+      });
+    });
+    return out;
+  }
+  function normOp(op) { const s = String(op == null ? "AND" : op).toUpperCase(); return (s === "OR" || s === "NOT") ? s : "AND"; }
+  // Build a complete publisher adapter (Emerald/Brill/T&F/Wiley share this shape).
+  function makePublisherAdapter(cfg) {
+    const origin = cfg.origin, pageSize = cfg.pageSize || 10, source = cfg.source;
+    function buildSearchUrl(p) {
+      p = p || {};
+      const parts = [cfg.queryParam + "=" + encodeURIComponent(p.query || "")];
+      if (p.page && Number(p.page) > 1 && cfg.pageParam) parts.push(cfg.pageParam + "=" + encodeURIComponent(p.page));
+      return origin + cfg.searchPath + "?" + parts.join("&");
+    }
+    function buildAdvancedQuery(criteria, opts) {
+      const parts = [];
+      (criteria || []).forEach((c, i) => {
+        if (!c || !c.term) return;
+        const f = (cfg.fields && cfg.fields[c.field]) || c.field;
+        const frag = f + ":(" + c.term + ")";
+        parts.push(i === 0 ? frag : normOp(c.op) + " " + frag);
+      });
+      let q = parts.join(" ");
+      if (opts && (opts.firstYear || opts.lastYear)) q += " " + (opts.firstYear || "") + "-" + (opts.lastYear || "");
+      return q.trim();
+    }
+    function buildAdvancedUrl(criteria, opts) {
+      const parts = [cfg.queryParam + "=" + encodeURIComponent(buildAdvancedQuery(criteria, opts))];
+      if (opts && opts.page && Number(opts.page) > 1 && cfg.pageParam) parts.push(cfg.pageParam + "=" + encodeURIComponent(opts.page));
+      return origin + cfg.searchPath + "?" + parts.join("&");
+    }
+    function parseArticleMeta(html) {
+      if (cfg.metaProfile === "dublincore") {
+        return parseDublinCoreArticle(html, source, { pdfTemplate: cfg.pdfTemplate, urlTemplate: cfg.articleUrlTemplate });
+      }
+      return parseHighwireArticle(html, source);
+    }
+    function harvestResultUrls(html) { return harvestHrefs(html, origin, cfg.linkMatch); }
+    function parseReferences(html) { return parseHighwireReferences(html, cfg.refSelectors); }
+    async function searchFromUrl(listUrl, query, page, ctx) {
+      const html = await ctx.fetchText(listUrl);
+      const urls = harvestResultUrls(html).slice(0, pageSize);
+      const articles = (await mapPool(urls, 3, async (u) => {
+        try { return parseArticleMeta(await ctx.fetchText(u)); } catch (e) { return null; }
+      })).filter(Boolean);
+      return makeSearchResult({ query: query, source: source, page: page || 1, pageSize: pageSize, total: null, articles });
+    }
+    async function search(args, ctx) { return searchFromUrl(buildSearchUrl(args), args.query, args.page, ctx); }
+    async function advancedSearch(args, ctx) {
+      return searchFromUrl(buildAdvancedUrl(args.criteria, args), buildAdvancedQuery(args.criteria, args), args.page, ctx);
+    }
+    async function extractReferences(args, ctx) {
+      const html = await ctx.fetchText(args.url);
+      return { source: source, url: args.url, references: parseReferences(html) };
+    }
+    async function readFulltext(args, ctx) {
+      const a = parseArticleMeta(await ctx.fetchText(args.url));
+      if (!a.pdfUrl) return { error: "no_fulltext", source: source, note: "subscription/login required" };
+      return { source: source, pdfUrl: a.pdfUrl };
+    }
+    return {
+      source: source, origin: origin, pageSize: pageSize,
+      capabilities: { search: true, advancedSearch: true, readFulltext: true, extractReferences: true },
+      fields: cfg.fields || {}, buildSearchUrl, buildAdvancedQuery, buildAdvancedUrl,
+      parseArticleMeta, harvestResultUrls, parseReferences, search, advancedSearch, extractReferences, readFulltext,
+    };
+  }
+
+  return { _adapters, register, get, normalizeArticle, makeSearchResult, canonicalDoi, normalizeTitle, dedupeArticles, makeBrowserCtx, pipelines, run, mapPool, parseHighwireArticle, parseDublinCoreArticle, harvestHrefs, parseHighwireReferences, makePublisherAdapter };
 });
