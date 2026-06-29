@@ -5,6 +5,11 @@
   if (LR && LR.register) LR.register("pubmed", api);
   return api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
+  function require_norm(raw) {
+    const LR = (typeof globalThis !== "undefined" && globalThis.__LR) ||
+               (typeof require !== "undefined" && require("../lib.js"));
+    return LR ? LR.normalizeArticle(raw) : raw;
+  }
   const ORIGIN = "https://eutils.ncbi.nlm.nih.gov";
   const BASE = ORIGIN + "/entrez/eutils/";
   const TOOL = "literature-review";
@@ -30,9 +35,32 @@
     const r = (json && json.esearchresult) || {};
     return { total: parseInt(r.count, 10) || 0, ids: (r.idlist || []).slice() };
   }
+  function buildEsummaryUrl(p) {
+    p = p || {};
+    return BASE + "esummary.fcgi?db=pubmed&retmode=json&id=" +
+      encodeURIComponent((p.ids || []).join(",")) + "&" + common(p.apiKey);
+  }
+  function parseEsummary(json) {
+    const res = (json && json.result) || {};
+    return (res.uids || []).map((uid) => {
+      const d = res[uid] || {};
+      const doiId = (d.articleids || []).find((x) => x.idtype === "doi");
+      const ym = /(\d{4})/.exec(d.pubdate || "");
+      return require_norm({
+        source: "pubmed",
+        title: d.title || null,
+        authors: (d.authors || []).map((a) => a.name).filter(Boolean),
+        year: ym ? ym[1] : null,
+        venue: d.fulljournalname || d.source || null,
+        doi: doiId ? doiId.value : null,
+        url: "https://pubmed.ncbi.nlm.nih.gov/" + uid + "/",
+        type: (d.pubtype && d.pubtype[0]) || null,
+      });
+    });
+  }
   return {
     source: "pubmed", origin: ORIGIN, pageSize: 20,
     capabilities: { search: true, advancedSearch: true, readFulltext: "pmc", extractReferences: true },
-    buildEsearchUrl, parseEsearch,
+    buildEsearchUrl, parseEsearch, buildEsummaryUrl, parseEsummary,
   };
 });

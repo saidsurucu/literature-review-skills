@@ -1,0 +1,7 @@
+{ "_provenance": "E-utilities esummary, ids 40000001, captured 2026-06-29 (trimmed)",
+  "result": { "uids": ["40000001"], "40000001": {
+  "uid": "40000001", "title": "A CRISPR Study", "pubdate": "2024 Mar 1",
+  "fulljournalname": "Journal of Tests", "source": "J Tests",
+  "authors": [{ "name": "Lovelace A" }, { "name": "Babbage C" }],
+  "articleids": [{ "idtype": "pubmed", "value": "40000001" }, { "idtype": "doi", "value": "10.1234/abc" }]
+} } }

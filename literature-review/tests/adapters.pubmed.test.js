@@ -24,3 +24,16 @@ test("parseEsearch returns total + ids", () => {
   assert.equal(r.total, 123);
   assert.deepEqual(r.ids, ["40000001", "40000002"]);
 });
+
+test("parseEsummary maps uids to normalized articles", () => {
+  const arts = PUBMED.parseEsummary(JSON.parse(fx("pubmed-esummary.json")));
+  assert.equal(arts.length, 1);
+  const a = arts[0];
+  assert.equal(a.source, "pubmed");
+  assert.equal(a.title, "A CRISPR Study");
+  assert.deepEqual(a.authors, ["Lovelace A", "Babbage C"]);
+  assert.equal(a.year, "2024");
+  assert.equal(a.venue, "Journal of Tests");
+  assert.equal(a.doi, "10.1234/abc");
+  assert.equal(a.url, "https://pubmed.ncbi.nlm.nih.gov/40000001/");
+});
