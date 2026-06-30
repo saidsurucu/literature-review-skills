@@ -10,9 +10,6 @@ Claude skill(s) for academic literature review.
   APIs and the user's own Chrome. See its [README](literature-review/README.md) and
   [`SKILL.md`](literature-review/SKILL.md).
 
-Design specs and implementation plans live under
-[`docs/superpowers/`](docs/superpowers/).
-
 ## Tests
 
 ```bash
