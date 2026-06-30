@@ -1,0 +1,21 @@
+{
+  "_provenance": "POST scopus.com/gateway/documents/search q=TITLE-ABS-KEY(citation network analysis) — captured 2026-06-30, trimmed to 1 item; authors shape per documented contract (recon redacted the live value)",
+  "metadata": { "offset": 0, "totalCount": 13679, "itemCount": 10, "numberOfPages": 1367 },
+  "items": [
+    {
+      "title": "Charting the Digital Frontier: A Comprehensive Bibliometric Analysis of E-Agriculture Research",
+      "doi": "10.15157/IJITIS.2026.9.1.51-114",
+      "eid": "2-s2.0-105030833937",
+      "scopusId": "105030833937",
+      "pubYear": 2026,
+      "abstractText": ["This study presents a statistically validated bibliometric analysis of e-agriculture research."],
+      "authors": [ { "indexedName": "Boshnjaku A." }, { "indexedName": "Plasari E." }, { "indexedName": "Fata I." } ],
+      "citations": { "count": 1, "link": "https://www.scopus.com/api/documents/citations/count?eid=2-s2.0-105030833937" },
+      "references": { "count": 86, "link": "https://www.scopus.com/api/documents/reference/count?eid=2-s2.0-105030833937" },
+      "source": { "title": "International Journal of Innovative Technology and Interdisciplinary Sciences", "publisher": "TULTECH", "issn": "26137305" },
+      "sourceRelationship": { "issue": "1", "volume": "9", "pages": [ { "pageFirst": "51", "pageLast": "114" } ] },
+      "documentType": "ar",
+      "subjectAreas": ["ENGI"]
+    }
+  ]
+}
