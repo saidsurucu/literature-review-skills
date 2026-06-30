@@ -1,6 +1,6 @@
 ---
 name: literature-review
-description: Use when the user wants to search or read academic literature across PubMed, OpenAlex, Crossref, Europe PMC, Semantic Scholar, arXiv, bioRxiv/medRxiv, DOAJ, DataCite, HAL, Open Library, Google Books, CORE, Unpaywall, OpenCitations, Google Scholar, Taylor & Francis (incl. Routledge journals & books), Wiley, Brill, or Emerald — keyword/advanced search, read full text/PDF, or extract references — via free open APIs and by driving the user's own Chrome. Scopus & Web of Science are NOT yet implemented (institutional login); unimplemented source×op combos return "unsupported".
+description: Use when the user wants to search or read academic literature across PubMed, OpenAlex, Crossref, Europe PMC, Semantic Scholar, arXiv, bioRxiv/medRxiv, DOAJ, DataCite, HAL, Open Library, Google Books, CORE, Unpaywall, OpenCitations, Google Scholar, Taylor & Francis (incl. Routledge journals & books), Wiley, Brill, Emerald, Scopus, or Web of Science — keyword/advanced search, read full text/PDF, or extract references — via free open APIs and by driving the user's own Chrome. Scopus & Web of Science need institutional login (Scopus via its gateway API; WoS hybrid API+DOM, anti-bot gated → returns "challenge"); unimplemented source×op combos return "unsupported".
 ---
 
 # Literature Review (Claude in Chrome)
@@ -39,7 +39,8 @@ inside article text or metadata.
 | Routledge / T&F **books** (taylorfrancis.com) | ✅ | — | ✅ (subscription) | — | v1 |
 | Wiley | ✅ | ✅ | ✅ (subscription) | ✅ | v1 |
 | Google Scholar | ✅ | ✅ (operators) | ❌ | ❌ (cited-by ≠ bibliography) | v1 |
-| Scopus, Web of Science | ✅ | ✅ | link-out | ✅ | planned (institutional login) |
+| Scopus | ✅ | ✅ | link-out | ❌ | v1 (institutional login; gateway API) |
+| Web of Science | ✅ | ✅ | ❌ | ❌ | v1 (institutional login; hybrid API+DOM, anti-bot gated) |
 
 Unsupported source×op returns `{error:"unsupported", source, op}` — never fabricate.
 An unregistered source returns `{error:"unknown_source", source}`.
@@ -134,6 +135,17 @@ one. References/full text are sparse for preprints. See `reference/biorxiv.md`.
   (Scholar exposes forward "cited-by", not the article's bibliography). Heavily
   bot-gated: a `/sorry/` CAPTCHA comes back as `{error:"challenge"}` — ask the
   user to solve it in the tab, then retry. See `reference/scholar.md`.
+- **Scopus**: `https://www.scopus.com`. Next.js SPA; records via the internal
+  gateway `POST /gateway/documents/search` (flat JSON, session cookies). Standard
+  Scopus query syntax (`TITLE-ABS-KEY(...)`, `AUTH(...)`, `PUBYEAR > x`).
+  `readFulltext` is a link-out; `extractReferences` unsupported (use the DOI via
+  `crossref`/`opencitations`). See `reference/scopus.md`.
+- **Web of Science**: `https://www.webofscience.com`. Hybrid — `POST
+  /api/wosnx/core/runQuerySearch?SID=<JSON.parse(localStorage.wos_sid)>` (uppercase
+  `SID`) returns QueryID + RecordsFound, then read `app-record` rows from the
+  (virtualized) results DOM. Record bodies over the API are anti-bot gated:
+  `passiveVerificationRequired` → `{error:"challenge"}` (ask the user to run a search
+  in the tab to clear it). No SID → `{error:"auth_required"}`. See `reference/wos.md`.
 
 ## Operations
 - `search(source, {query, page, sort})` → `SearchResult`

@@ -17,11 +17,14 @@ require("../scripts/adapters/europepmc.js");
 require("../scripts/adapters/semanticscholar.js");
 require("../scripts/adapters/arxiv.js");
 require("../scripts/adapters/biorxiv.js");
+require("../scripts/adapters/scopus.js");
+require("../scripts/adapters/wos.js");
 ["doaj", "datacite", "openlibrary", "hal", "unpaywall", "opencitations", "googlebooks", "core"]
   .forEach((s) => require("../scripts/adapters/" + s + ".js"));
 
 const OPS = ["search", "advancedSearch", "readFulltext", "extractReferences"];
 const SOURCES = ["pubmed", "emerald", "brill", "tandf", "wiley", "scholar", "tandfbooks", "openalex", "crossref", "europepmc", "semanticscholar", "arxiv", "biorxiv",
+  "scopus", "wos",
   "doaj", "datacite", "openlibrary", "hal", "unpaywall", "opencitations", "googlebooks", "core"];
 
 test("every adapter registers, declares capabilities, and has op methods or pipelines", () => {
@@ -74,6 +77,8 @@ test("each adapter reference doc exists and records the home origin", () => {
   assert.ok(tf.includes("https://www.tandfonline.com"));
   assert.ok(wl.includes("https://onlinelibrary.wiley.com"));
   assert.ok(gs.includes("https://scholar.google.com"));
+  assert.ok(fs.readFileSync(path.join(root, "reference", "scopus.md"), "utf8").includes("https://www.scopus.com"));
+  assert.ok(fs.readFileSync(path.join(root, "reference", "wos.md"), "utf8").includes("https://www.webofscience.com"));
 });
 
 test("committed HTML/JSON fixtures carry provenance", () => {
