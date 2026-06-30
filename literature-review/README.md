@@ -1,6 +1,6 @@
 # literature-review
 
-A Claude skill that searches and reads academic literature across **21 scholarly
+A Claude skill that searches and reads academic literature across **23 scholarly
 sources** — partly through **free open APIs** and partly by driving the user's own
 Chrome (the same browser-automation approach as the `dergipark` / `trdizin`
 skills). Every source is a self-registering adapter behind four uniform
@@ -19,16 +19,18 @@ OpenCitations⁴ · PubMed¹
 
 **Browser-driven (the user's session; navigate-first):**
 Google Scholar⁵ · Emerald · Brill · Taylor & Francis journals (incl. Routledge) ·
-Routledge/T&F books · Wiley
+Routledge/T&F books · Wiley · Scopus⁶ · Web of Science⁷
 
 <sub>¹ navigate-first (not CORS-open)  ² keyless quota is small (429); `apiKey` recommended
 ³ free API key required  ⁴ by-DOI enhancer only (Unpaywall→`readFulltext`,
-OpenCitations→`extractReferences`)  ⁵ heavily CAPTCHA-gated</sub>
+OpenCitations→`extractReferences`)  ⁵ heavily CAPTCHA-gated  ⁶ institutional login;
+internal gateway JSON API; `readFulltext` is link-out  ⁷ institutional login; hybrid
+API+DOM, anti-bot gated (returns `challenge`)</sub>
 
-**Not implemented / deferred:** Scopus & Web of Science (institutional login);
-SSRN, SAGE, MDPI (anti-bot/Cloudflare); OSF, SciELO (CORS-blocked). Springer,
-Nature, Oxford, Cambridge, Frontiers, PLOS etc. are already searchable via
-OpenAlex/Crossref/Europe PMC, so they have no dedicated adapter.
+**Not implemented / deferred:** SSRN, SAGE, MDPI (anti-bot/Cloudflare); OSF,
+SciELO (CORS-blocked). Springer, Nature, Oxford, Cambridge, Frontiers, PLOS etc.
+are already searchable via OpenAlex/Crossref/Europe PMC, so they have no dedicated
+adapter.
 
 ## Architecture
 
@@ -63,7 +65,7 @@ Cross-source result sets dedupe by canonical DOI, then normalized title
 cd tests && npm install && npm test     # node --test + jsdom
 ```
 
-93 tests. Pure functions (URL/query builders, parsers, schema, dedupe, dispatch
+111 tests. Pure functions (URL/query builders, parsers, schema, dedupe, dispatch
 error-handling) are unit-tested in Node with `jsdom`. Parser tests run against
 committed fixtures captured from the live sources — each fixture records its
 source URL and capture date. Browser/API orchestration was additionally verified
